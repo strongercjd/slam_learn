@@ -4,12 +4,13 @@
     <arg name="bag_filename" default="$(find 01_learn_ladar_data)/../../bagfiles/lesson1.bag" />
 
     <!-- 使用bag的时间戳 -->
+    <!-- 将参数 use_sim_time 设置为true，代表当前ros的时间为bag文件中的时间-->
     <param name="use_sim_time" value="true" />
 
     <!-- 启动节点 -->
     <node name="learn_ladar_data_node" pkg="01_learn_ladar_data" type="01_learn_ladar_data_node" output="screen" />
 
-    <!-- play bagfile -->
+    <!-- play bagfile –clock 选项，以表示使用bag文件中的时间为ros的当前时间 -->
     <node name="playbag" pkg="rosbag" type="play" args="--clock $(arg bag_filename)" /> 
 
     <!-- 发布静态坐标系 -->
