@@ -14,38 +14,48 @@
  * limitations under the License.
  */
 
-#ifndef SCAN_TO_POINTCLOUD2_CONVERTER_H
-#define SCAN_TO_POINTCLOUD2_CONVERTER_H
+#ifndef SCAN_MATCH_ICP
+#define SCAN_MATCH_ICP
 
 // ros
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 
 // pcl_ros
-#include <pcl_ros/point_cloud.h>    
+#include <pcl_ros/point_cloud.h>
 
 // pcl
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <pcl/registration/icp.h>
 
-
-class ScanToPointCloud2Converter
+class ScanMatchICP
 {
     // 使用PCL中点的数据结构 pcl::PointXYZ
     typedef pcl::PointXYZ PointT;
     // 使用PCL中点云的数据结构 pcl::PointCloud<pcl::PointXYZ>
     typedef pcl::PointCloud<PointT> PointCloudT;
-
 private:
     ros::NodeHandle node_handle_;           // ros中的句柄
     ros::NodeHandle private_node_;          // ros中的私有句柄
     ros::Subscriber laser_scan_subscriber_; // 声明一个Subscriber
-    ros::Publisher pointcloud2_publisher_;  // 声明一个Publisher
-    PointT invalid_point_;                  // 保存无效点的值,为nan
+
+    bool is_first_scan_;    // 判断是否是第一个雷达数据
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr current_pointcloud_;    // 当前帧雷达数据
+    pcl::PointCloud<pcl::PointXYZ>::Ptr last_pointcloud_;       // 前一帧雷达数据
+
+    // icp算法
+    pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp_;
+
+    void ScanMatchWithICP(const sensor_msgs::LaserScan::ConstPtr &scan_msg);
+    void ConvertScan2PointCloud(const sensor_msgs::LaserScan::ConstPtr &scan_msg);
+
 public:
-    ScanToPointCloud2Converter();
-    ~ScanToPointCloud2Converter();
-    void ScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_msg);
+    ScanMatchICP();
+    ~ScanMatchICP();
+    void ScanCallback(const sensor_msgs::LaserScan::ConstPtr &scan_msg);
 };
 
-#endif // LESSON2_SCAN_TO_POINTCLOUD2_CONVERTER_H
+
+#endif // LESSON2_SCAN_MATCH_ICP
