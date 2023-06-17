@@ -166,7 +166,7 @@ void ScanMatchICP::ScanMatchWithICP(const sensor_msgs::LaserScan::ConstPtr &scan
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "lesson2_scan_match_icp_node"); // 节点的名字
+    ros::init(argc, argv, "scan_match_icp_node"); // 节点的名字
     ScanMatchICP scan_match_icp;
 
     ros::spin(); // 程序执行到此处时开始进行等待，每次订阅的消息到来都会执行一次ScanCallback()

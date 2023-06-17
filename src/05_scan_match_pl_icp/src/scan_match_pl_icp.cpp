@@ -302,7 +302,7 @@ void ScanMatchPLICP::ScanMatchWithPLICP(LDP &curr_ldp_scan, const ros::Time &tim
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "lesson3_scan_match_plicp_node"); // 节点的名字
+    ros::init(argc, argv, "scan_match_pl_icp_node"); // 节点的名字
     ScanMatchPLICP scan_match_plicp;
 
     ros::spin(); 
