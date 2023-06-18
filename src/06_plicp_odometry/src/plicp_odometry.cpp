@@ -556,7 +556,7 @@ bool ScanMatchPLICP::NewKeyframeNeeded(const tf2::Transform &d)
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "lesson3_scan_match_plicp_node"); // 节点的名字
+    ros::init(argc, argv, "scan_match_plicp_node"); // 节点的名字
     ScanMatchPLICP scan_match_plicp;
 
     ros::spin();

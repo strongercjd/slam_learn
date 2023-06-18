@@ -1,0 +1,12 @@
+<launch>
+
+    <!-- 启动节点 -->
+    <node name="scan_to_cloud_converter_node" pkg="07_occupancy_grid" type="07_occupancy_grid_node" output="screen" />
+
+    <!-- 发布静态坐标系 -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="link_broadcaster" args="0 0 0.254 0 0 3.1415926 base_link front_laser_link" />
+
+    <!-- launch rviz -->
+    <node name="rviz" pkg="rviz" type="rviz" required="false" args="-d $(find 07_occupancy_grid)/launch/rviz_conf.rviz" />
+
+</launch>
