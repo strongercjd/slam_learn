@@ -82,14 +82,14 @@ public:
 
     //通过物理坐标或者栅格坐标返回单一栅格对象
     inline Cell &cell(const IntPoint &p);
-    inline const Cell &cell(const IntPoint &p) const;
-    inline Cell &cell(const Point &p);
-    inline const Cell &cell(const Point &p) const;
+    // inline const Cell &cell(const IntPoint &p) const;
+    // inline Cell &cell(const Point &p);
+    // inline const Cell &cell(const Point &p) const;
 
-    inline Cell &cell(int x, int y) { return cell(IntPoint(x, y)); }
-    inline const Cell &cell(int x, int y) const { return cell(IntPoint(x, y)); }
-    inline Cell &cell(double x, double y) { return cell(Point(x, y)); }
-    inline const Cell &cell(double x, double y) const { return cell(Point(x, y)); }
+    // inline Cell &cell(int x, int y) { return cell(IntPoint(x, y)); }
+    // inline const Cell &cell(int x, int y) const { return cell(IntPoint(x, y)); }
+    // inline Cell &cell(double x, double y) { return cell(Point(x, y)); }
+    // inline const Cell &cell(double x, double y) const { return cell(Point(x, y)); }
 
     //判断某一个物理位置或者栅格坐标是否在地图里面 引用的是模板类m_storage(实际上是HierarchicalArray2D)中的函数
     inline bool isInside(int x, int y) const { return m_storage.cellState(IntPoint(x, y)) & Inside; }
@@ -102,11 +102,11 @@ public:
     inline const Storage &storage() const { return m_storage; }
 
 protected:
-    Point m_center;                             //地图的中心
-    double m_worldSizeX, m_worldSizeY, m_delta; //世界坐标系的大小，以及地图的分辨率
+    Point m_center;                             //地图的中心，地图是X：-40至40 Y：-40至40 所以中心是0，0
+    double m_worldSizeX, m_worldSizeY, m_delta; //世界坐标系的大小，以及地图的分辨率，m_worldSizeX，因为地图是X：-40至40，所以m_worldSizeX是80
     Storage m_storage;                          //地图数据存储的地方
     int m_mapSizeX, m_mapSizeY;                 //地图的大小
-    int m_sizeX2, m_sizeY2;                     //表示地图大小的一半
+    int m_sizeX2, m_sizeY2;                     //表示地图大小的一半，单位：栅格数目
     static const Cell m_unknown;                //一个cell的默认值-1
 };
 
@@ -128,14 +128,25 @@ Map<Cell, Storage, isClass>::Map(const Point &center, double worldSizeX, double 
     m_sizeY2 = m_mapSizeY >> 1;
 }
 
+/*
+ScanMatcherMap gmapping_map_(center, xmin_, ymin_, xmax_, ymax_, resolution_);
+typedef Map<PointAccumulator, HierarchicalArray2D<PointAccumulator>> ScanMatcherMap; 
+展开后就是
+Map<PointAccumulator, HierarchicalArray2D<PointAccumulator>> gmapping_map_(center, xmin_, ymin_, xmax_, ymax_, resolution_);
+所以使用的是这个构造函数
+
+初始化列表中初始化了 m_storage 对应的是 HierarchicalArray2D<PointAccumulator> 
+
+ceil() 浮点数向上取整
+*/
 //构造函数
 template <class Cell, class Storage, const bool isClass>
-Map<Cell, Storage, isClass>::Map(const Point &center, double xmin, double ymin, double xmax, double ymax, double delta) : m_storage((int)ceil((xmax - xmin) / delta), (int)ceil((ymax - ymin) / delta))
+Map<Cell, Storage, isClass>::Map(const Point &center, double xmin, double ymin, double xmax, double ymax, double delta) : m_storage((int)ceil((xmax - xmin) / delta), (int)ceil((ymax - ymin) / delta))// ceil浮点数向上取整
 {
     m_center = center;
     m_worldSizeX = xmax - xmin;
     m_worldSizeY = ymax - ymin;
-    m_delta = delta;
+    m_delta = delta;// 地图的分辨率
     m_mapSizeX = m_storage.getXSize() << m_storage.getPatchSize();
     m_mapSizeY = m_storage.getYSize() << m_storage.getPatchSize();
     m_sizeX2 = (int)round((m_center.x - xmin) / m_delta);
@@ -170,6 +181,7 @@ void Map<Cell, Storage, isClass>::resize(double xmin, double ymin, double xmax, 
 template <class Cell, class Storage, const bool isClass>
 IntPoint Map<Cell, Storage, isClass>::world2map(const Point &p) const
 {
+    // 加上m_sizeX2以为地图是从左下角开始的坐标
     return IntPoint((int)round((p.x - m_center.x) / m_delta) + m_sizeX2, (int)round((p.y - m_center.y) / m_delta) + m_sizeY2);
 }
 
@@ -191,37 +203,37 @@ Cell &Map<Cell, Storage, isClass>::cell(const IntPoint &p)
     return m_storage.cell(p);
 }
 
-template <class Cell, class Storage, const bool isClass>
-Cell &Map<Cell, Storage, isClass>::cell(const Point &p)
-{
-    IntPoint ip = world2map(p);
-    AccessibilityState s = m_storage.cellState(ip);
-    if (!(s & Inside))
-        assert(0);
-    return m_storage.cell(ip);
-}
+// template <class Cell, class Storage, const bool isClass>
+// Cell &Map<Cell, Storage, isClass>::cell(const Point &p)
+// {
+//     IntPoint ip = world2map(p);
+//     AccessibilityState s = m_storage.cellState(ip);
+//     if (!(s & Inside))
+//         assert(0);
+//     return m_storage.cell(ip);
+// }
 
-template <class Cell, class Storage, const bool isClass>
-const Cell &Map<Cell, Storage, isClass>::cell(const IntPoint &p) const
-{
-    AccessibilityState s = m_storage.cellState(p);
-    if (s & Allocated)
-        return m_storage.cell(p);
-    return m_unknown;
-}
+// template <class Cell, class Storage, const bool isClass>
+// const Cell &Map<Cell, Storage, isClass>::cell(const IntPoint &p) const
+// {
+//     AccessibilityState s = m_storage.cellState(p);
+//     if (s & Allocated)
+//         return m_storage.cell(p);
+//     return m_unknown;
+// }
 
-template <class Cell, class Storage, const bool isClass>
-const Cell &Map<Cell, Storage, isClass>::cell(const Point &p) const
-{
-    IntPoint ip = world2map(p);
-    AccessibilityState s = m_storage.cellState(ip);
-    if (s & Allocated)
-        return m_storage.cell(ip);
-    return m_unknown;
-}
+// template <class Cell, class Storage, const bool isClass>
+// const Cell &Map<Cell, Storage, isClass>::cell(const Point &p) const
+// {
+//     IntPoint ip = world2map(p);
+//     AccessibilityState s = m_storage.cellState(ip);
+//     if (s & Allocated)
+//         return m_storage.cell(ip);
+//     return m_unknown;
+// }
 
 //最终的地图类
-typedef Map<PointAccumulator, HierarchicalArray2D<PointAccumulator>> ScanMatcherMap; //一张地图的类
+typedef Map<PointAccumulator, HierarchicalArray2D<PointAccumulator>> ScanMatcherMap; // 一张地图的类
 
 }; // namespace GMapping
 

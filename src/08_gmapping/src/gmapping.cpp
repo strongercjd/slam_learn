@@ -21,7 +21,7 @@ namespace gmapping
 {
 
 // 构造函数
-GMapping::GMapping() : private_node_("~")
+GMapping::GMapping() : private_node_("~")//private_node_ 初始化为 “~” ，代表私有命名空间，可以用来获取节点内的参数。
 {
     // \033[1;32m，\033[0m 终端显示成绿色
     ROS_INFO_STREAM("\033[1;32m----> Make Gmapping Map by no move started.\033[0m");
@@ -41,14 +41,21 @@ GMapping::~GMapping()
 }
 
 // ros的参数初始化
+// 使用私有句柄 private_node_ 获取节点内部参数，参数写在配置文件中了
 void GMapping::InitParams()
 {
-    if (!private_node_.getParam("maxRange", max_range_))
+    if (!private_node_.getParam("maxRange", max_range_))// 激光雷达最大的量程
+    {
+        std::cout << "\ncan not get maxRange" << std::endl;
         max_range_ = 30 - 0.01;
-    if (!private_node_.getParam("maxUrange", max_use_range_))
+    }else{
+        std::cout << "\nc get maxRange :" << max_range_ << std::endl;
+    }
+        
+    if (!private_node_.getParam("maxUrange", max_use_range_))// 激光雷达最大使用距离
         max_use_range_ = 25;
 
-    if (!private_node_.getParam("xmin", xmin_))
+    if (!private_node_.getParam("xmin", xmin_))// 地图的边界
         xmin_ = -40.0;
     if (!private_node_.getParam("ymin", ymin_))
         ymin_ = -40.0;
@@ -58,7 +65,7 @@ void GMapping::InitParams()
         ymax_ = 40.0;
     if (!private_node_.getParam("delta", resolution_))
         resolution_ = 0.05;
-    if (!private_node_.getParam("occ_thresh", occ_thresh_))
+    if (!private_node_.getParam("occ_thresh", occ_thresh_))// 大于这个阈值的格子才认为是占用栅格
         occ_thresh_ = 0.25;
 
     /********************************************/
@@ -84,28 +91,33 @@ void GMapping::InitParams()
 }
 
 // 回调函数 进行数据处理
+unsigned num = 0;
 void GMapping::ScanCallback(const sensor_msgs::LaserScan::ConstPtr &scan_msg)
 {
-
-    static ros::Time last_map_update(0, 0); //存储上一次地图更新的时间
-
-    if (!got_first_scan_) //如果是第一次接收scan
+    if(num == 0)
     {
-        // 将雷达各个角度的sin与cos值保存下来，以节约计算量
-        CreateCache(scan_msg);
-        got_first_scan_ = true; //改变第一帧的标志位
+        // num = 1;
+        static ros::Time last_map_update(0, 0); //存储上一次地图更新的时间
+
+        if (!got_first_scan_) //如果是第一次接收scan
+        {
+            // 将雷达各个角度的sin与cos值保存下来，以节约计算量
+            CreateCache(scan_msg);
+            got_first_scan_ = true; //改变第一帧的标志位
+        }
+
+        start_time_ = std::chrono::steady_clock::now();
+
+        // 计算当前雷达数据对应的栅格地图并发布出去
+        PublishMap(scan_msg);
+
+        end_time_ = std::chrono::steady_clock::now();
+        time_used_ = std::chrono::duration_cast<std::chrono::duration<double>>(end_time_ - start_time_);
+        std::cout << "\n转换一次地图用时: " << time_used_.count() << " 秒。" << std::endl;
+
+        last_map_update = scan_msg->header.stamp;
     }
 
-    start_time_ = std::chrono::steady_clock::now();
-
-    // 计算当前雷达数据对应的栅格地图并发布出去
-    PublishMap(scan_msg);
-
-    end_time_ = std::chrono::steady_clock::now();
-    time_used_ = std::chrono::duration_cast<std::chrono::duration<double>>(end_time_ - start_time_);
-    std::cout << "\n转换一次地图用时: " << time_used_.count() << " 秒。" << std::endl;
-
-    last_map_update = scan_msg->header.stamp;
 }
 
 // 雷达数据间的角度是固定的，因此可以将对应角度的cos与sin值缓存下来，不用每次都计算
@@ -180,10 +192,13 @@ void GMapping::ComputeMap(ScanMatcherMap &map, const sensor_msgs::LaserScan::Con
     IntPoint p0 = map.world2map(lp);
 
     // 地图的有效区域(地图坐标系)
+    // typedef std::set< point<int>, pointcomparator<int> > PointSet;
     HierarchicalArray2D<PointAccumulator>::PointSet activeArea;
 
     // 通过激光雷达的数据，找出地图的有效区域
+    // TODO:测试
     for (unsigned int i = 0; i < scan_msg->ranges.size(); i++)
+    // for (unsigned int i = 0; i < 1; i++)
     {
         // 排除错误的激光点
         double d = scan_msg->ranges[i];
@@ -245,7 +260,7 @@ void GMapping::ComputeMap(ScanMatcherMap &map, const sensor_msgs::LaserScan::Con
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "lesson4_make_gmapping_map");
+    ros::init(argc, argv, "make_gmapping_map");
 
     gmapping::GMapping gmapping;
 

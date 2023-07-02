@@ -1,19 +1,21 @@
 <launch>
 
     <!-- bag的地址与名称 -->
-    <arg name="bag_filename" default="$(find 06_plicp_odometry)/../../bagfiles/bag_scan_odom.bag" />
+    <arg name="bag_filename" default="$(find 08_gmapping)/../../bagfiles/square_environment.bag" />
 
     <!-- 使用bag的时间戳 -->
     <param name="use_sim_time" value="true" />
 
     <!-- 启动节点 -->
-    <node name="scan_to_cloud_converter_node" pkg="08_gmapping" type="08_gmapping_node" output="screen" />
+    <node name="make_gmapping_map" pkg="08_gmapping" type="08_gmapping_node" output="screen" >
+        <rosparam file="$(find 08_gmapping)/launch/gmapping_conf.yaml" command="load"/>
+    </node>
 
     <!-- play bagfile -->
     <node name="playbag" pkg="rosbag" type="play" args="--clock $(arg bag_filename)" /> 
 
     <!-- 发布静态坐标系 -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="link_broadcaster" args="0 0 0.254 0 0 3.1415926 base_link front_laser_link" />
+    <node name="static_tree" pkg="tf2_ros" type="static_transform_publisher" args="0.2 0 0.5 0 0 0 /base_link /laser" /> 
 
     <!-- launch rviz -->
     <node name="rviz" pkg="rviz" type="rviz" required="false" args="-d $(find 08_gmapping)/launch/rviz_conf.rviz" />

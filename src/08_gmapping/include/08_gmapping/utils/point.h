@@ -171,7 +171,7 @@ struct pointradialcomparator{
 /*几个不同类型的重定向指令*/
 typedef point<int> IntPoint;
 typedef point<double> Point;
-typedef orientedpoint<double, double> OrientedPoint;
+typedef orientedpoint<double, double> OrientedPoint;//定向的点，也就是带方向的点
 
 }; //end namespace
 

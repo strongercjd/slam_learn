@@ -67,16 +67,24 @@ class HierarchicalArray2D: public Array2D<std::shared_ptr< Array2D<Cell> > >
 
 		PointSet m_activeArea;  //存储地图中使用到的Cell的坐标
 		int m_patchMagnitude;   //patch的大小等级  
-		int m_patchSize;		//patch的实际大小 
+		int m_patchSize;		//patch的实际大小，默认是32
 };
 
 //输入栅格地图大小，和地图patch的等级，初始化一个将装满地图补丁的二维数组，每一个元素都是一个patch
+/**
+ * @brief Construct a new Hierarchical Array 2 D< Cell>:: Hierarchical Array 2 D object
+ * 
+ * @tparam Cell 
+ * @param xsize 珊格地图的大小，在x轴有多少个格子
+ * @param ysize 
+ * @param patchMagnitude 默认是5，地图补丁的大小等级
+ */
 template <class Cell>
 HierarchicalArray2D<Cell>::HierarchicalArray2D(int xsize, int ysize, int patchMagnitude) 
   :Array2D<std::shared_ptr< Array2D<Cell> > >::Array2D((xsize>>patchMagnitude), (ysize>>patchMagnitude))
 {
 	m_patchMagnitude = patchMagnitude;//地图补丁的大小等级
-	m_patchSize = 1<<m_patchMagnitude;//每块地图补丁的边大小，而非每块地图补丁中的栅格数目
+	m_patchSize = 1<<m_patchMagnitude;//每块地图补丁的边大小，而非每块地图补丁中的栅格数目  1左移5位是32
 }
 
 //调整存储 “地图补丁” 的二维数组的大小，也就是个数变化

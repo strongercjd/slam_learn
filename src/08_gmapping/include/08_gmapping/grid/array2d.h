@@ -47,6 +47,14 @@ class Array2D
 };
 
 //参数栅格地图大小，为整个栅格地图的每个栅格申请内存
+/**
+ * @brief Construct a new Array 2 D< Cell,debug>:: Array 2 D object
+ * 
+ * @tparam Cell 
+ * @tparam debug 
+ * @param xsize 栅格地图X轴栅格个数，注意：这个在上一级除以了 patchMagnitude(默认32) 所以这个地图的分辨率会低，
+ * @param ysize 
+ */
 template <class Cell, const bool debug>
 Array2D<Cell,debug>::Array2D(int xsize, int ysize)
 {
