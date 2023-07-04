@@ -26,74 +26,47 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //=================================================================================================
 
-#ifndef _DATAPOINTCONTAINER_H_
-#define _DATAPOINTCONTAINER_H_
+#ifndef _hectormaprepresentationinterface_h__
+#define _hectormaprepresentationinterface_h__
 
-#include <vector>
+class GridMap;
+class ConcreteOccGridMapUtil;
+class DataContainer;
 
 namespace hectorslam
 {
-
-template <typename DataPointType>
-class DataPointContainer
+    
+/**
+ * 地图接口，定义了一系列地图操作的借口。类内函数均为纯虚函数（= 0）。
+ *
+ * NOTE: 此为抽象基类，不能直接创建一个MapRepresentationInterface的对象。
+ */
+class MapRepresentationInterface
 {
 public:
-    DataPointContainer(int size = 1000)
-    {
-        dataPoints.reserve(size);
-    }
+    virtual ~MapRepresentationInterface(){};
 
-    void setFrom(const DataPointContainer &other, float factor)
-    {
-        origo = other.getOrigo() * factor;
+    virtual void reset() = 0;
 
-        dataPoints = other.dataPoints;
+    virtual float getScaleToMap() const = 0;
 
-        unsigned int size = dataPoints.size();
+    virtual int getMapLevels() const = 0;
+    virtual const GridMap &getGridMap(int mapLevel = 0) const = 0;
 
-        for (unsigned int i = 0; i < size; ++i)
-        {
-            dataPoints[i] *= factor;
-        }
-    }
+    virtual void addMapMutex(int i, MapLockerInterface *mapMutex) = 0;
+    virtual MapLockerInterface *getMapMutex(int i) = 0;
 
-    void add(const DataPointType &dataPoint)
-    {
-        dataPoints.push_back(dataPoint);
-    }
+    virtual void onMapUpdated() = 0;
 
-    void clear()
-    {
-        dataPoints.clear();
-    }
+    /** 位姿计算 **/
+    virtual Eigen::Vector3f matchData(const Eigen::Vector3f &beginEstimateWorld, const DataContainer &dataContainer, Eigen::Matrix3f &covMatrix) = 0;
 
-    int getSize() const
-    {
-        return dataPoints.size();
-    }
+    /** 地图更新 **/
+    virtual void updateByScan(const DataContainer &dataContainer, const Eigen::Vector3f &robotPoseWorld) = 0;
 
-    const DataPointType &getVecEntry(int index) const
-    {
-        return dataPoints[index];
-    }
-
-    DataPointType getOrigo() const
-    {
-        return origo;
-    }
-
-    void setOrigo(const DataPointType &origoIn)
-    {
-        origo = origoIn;
-    }
-
-protected:
-    std::vector<DataPointType> dataPoints;
-    DataPointType origo;
+    virtual void setUpdateFactorFree(float free_factor) = 0;
+    virtual void setUpdateFactorOccupied(float occupied_factor) = 0;
 };
-
-typedef DataPointContainer<Eigen::Vector2f> DataContainer;
-
-} // namespace hectorslam
+}
 
 #endif

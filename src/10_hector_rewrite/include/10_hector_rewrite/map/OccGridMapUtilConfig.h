@@ -26,73 +26,33 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //=================================================================================================
 
-#ifndef _DATAPOINTCONTAINER_H_
-#define _DATAPOINTCONTAINER_H_
+#ifndef __OccGridMapUtilConfig_h_
+#define __OccGridMapUtilConfig_h_
 
-#include <vector>
+#include "OccGridMapUtil.h"
+
+//#define SLAM_USE_HASH_CACHING
+#ifdef SLAM_USE_HASH_CACHING
+#include "GridMapCacheHash.h"
+typedef GridMapCacheHash GridMapCacheMethod;
+#else
+#include "GridMapCacheArray.h"
+typedef GridMapCacheArray GridMapCacheMethod;
+#endif
 
 namespace hectorslam
 {
 
-template <typename DataPointType>
-class DataPointContainer
-{
-public:
-    DataPointContainer(int size = 1000)
+    template <typename ConcreteOccGridMap>
+    class OccGridMapUtilConfig
+        : public OccGridMapUtil<ConcreteOccGridMap, GridMapCacheMethod>
     {
-        dataPoints.reserve(size);
-    }
-
-    void setFrom(const DataPointContainer &other, float factor)
-    {
-        origo = other.getOrigo() * factor;
-
-        dataPoints = other.dataPoints;
-
-        unsigned int size = dataPoints.size();
-
-        for (unsigned int i = 0; i < size; ++i)
+    public:
+        OccGridMapUtilConfig(ConcreteOccGridMap *gridMap = 0)
+            : OccGridMapUtil<ConcreteOccGridMap, GridMapCacheMethod>(gridMap)
         {
-            dataPoints[i] *= factor;
         }
-    }
-
-    void add(const DataPointType &dataPoint)
-    {
-        dataPoints.push_back(dataPoint);
-    }
-
-    void clear()
-    {
-        dataPoints.clear();
-    }
-
-    int getSize() const
-    {
-        return dataPoints.size();
-    }
-
-    const DataPointType &getVecEntry(int index) const
-    {
-        return dataPoints[index];
-    }
-
-    DataPointType getOrigo() const
-    {
-        return origo;
-    }
-
-    void setOrigo(const DataPointType &origoIn)
-    {
-        origo = origoIn;
-    }
-
-protected:
-    std::vector<DataPointType> dataPoints;
-    DataPointType origo;
-};
-
-typedef DataPointContainer<Eigen::Vector2f> DataContainer;
+    };
 
 } // namespace hectorslam
 

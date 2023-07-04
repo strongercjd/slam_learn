@@ -26,74 +26,14 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //=================================================================================================
 
-#ifndef _DATAPOINTCONTAINER_H_
-#define _DATAPOINTCONTAINER_H_
+#ifndef maplockerinterface_h__
+#define maplockerinterface_h__
 
-#include <vector>
-
-namespace hectorslam
-{
-
-template <typename DataPointType>
-class DataPointContainer
+class MapLockerInterface
 {
 public:
-    DataPointContainer(int size = 1000)
-    {
-        dataPoints.reserve(size);
-    }
-
-    void setFrom(const DataPointContainer &other, float factor)
-    {
-        origo = other.getOrigo() * factor;
-
-        dataPoints = other.dataPoints;
-
-        unsigned int size = dataPoints.size();
-
-        for (unsigned int i = 0; i < size; ++i)
-        {
-            dataPoints[i] *= factor;
-        }
-    }
-
-    void add(const DataPointType &dataPoint)
-    {
-        dataPoints.push_back(dataPoint);
-    }
-
-    void clear()
-    {
-        dataPoints.clear();
-    }
-
-    int getSize() const
-    {
-        return dataPoints.size();
-    }
-
-    const DataPointType &getVecEntry(int index) const
-    {
-        return dataPoints[index];
-    }
-
-    DataPointType getOrigo() const
-    {
-        return origo;
-    }
-
-    void setOrigo(const DataPointType &origoIn)
-    {
-        origo = origoIn;
-    }
-
-protected:
-    std::vector<DataPointType> dataPoints;
-    DataPointType origo;
+  virtual void lockMap() = 0;
+  virtual void unlockMap() = 0;
 };
-
-typedef DataPointContainer<Eigen::Vector2f> DataContainer;
-
-} // namespace hectorslam
 
 #endif

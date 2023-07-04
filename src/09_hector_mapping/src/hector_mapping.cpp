@@ -91,6 +91,7 @@ void HectorMapping::ScanCallback(const sensor_msgs::LaserScan &scan)
     start_time_ = std::chrono::steady_clock::now();
 
     // 当雷达数据到来时新建地图
+    /* typedef OccGridMapBase<LogOddsCell, GridMapLogOddsFunctions> GridMap; */
     hector_map_ = new hectorslam::GridMap(resolution_, map_size_, offset_);
 
     end_time_ = std::chrono::steady_clock::now();

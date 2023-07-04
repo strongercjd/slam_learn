@@ -26,74 +26,70 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //=================================================================================================
 
-#ifndef _DATAPOINTCONTAINER_H_
-#define _DATAPOINTCONTAINER_H_
+#ifndef utilfunctions_h__
+#define utilfunctions_h__
 
-#include <vector>
+#include <cmath>
 
-namespace hectorslam
+namespace util{
+
+static inline float normalize_angle_pos(float angle)
 {
+  return fmod(fmod(angle, 2.0f*M_PI) + 2.0f*M_PI, 2.0f*M_PI);
+}
 
-template <typename DataPointType>
-class DataPointContainer
+static inline float normalize_angle(float angle)
 {
-public:
-    DataPointContainer(int size = 1000)
-    {
-        dataPoints.reserve(size);
-    }
+  float a = normalize_angle_pos(angle);
+  if (a > M_PI){
+    a -= 2.0f*M_PI;
+  }
+  return a;
+}
 
-    void setFrom(const DataPointContainer &other, float factor)
-    {
-        origo = other.getOrigo() * factor;
+static inline float sqr(float val)
+{
+  return val*val;
+}
 
-        dataPoints = other.dataPoints;
+static inline int sign(int x)
+{
+  return x > 0 ? 1 : -1;
+}
 
-        unsigned int size = dataPoints.size();
+template<typename T>
+static T toDeg(const T radVal)
+{
+  return radVal * static_cast<T>(180.0 / M_PI);
+}
 
-        for (unsigned int i = 0; i < size; ++i)
-        {
-            dataPoints[i] *= factor;
-        }
-    }
+template<typename T>
+static T toRad(const T degVal)
+{
+  return degVal * static_cast<T>(M_PI / 180.0);
+}
 
-    void add(const DataPointType &dataPoint)
-    {
-        dataPoints.push_back(dataPoint);
-    }
+static bool poseDifferenceLargerThan(const Eigen::Vector3f& pose1, const Eigen::Vector3f& pose2, float distanceDiffThresh, float angleDiffThresh)
+{
+  //check distance
+  if ( ( (pose1.head<2>() - pose2.head<2>()).norm() ) > distanceDiffThresh){
+    return true;
+  }
 
-    void clear()
-    {
-        dataPoints.clear();
-    }
+  float angleDiff = (pose1.z() - pose2.z());
 
-    int getSize() const
-    {
-        return dataPoints.size();
-    }
+  if (angleDiff > M_PI) {
+    angleDiff -= M_PI * 2.0f;
+  } else if (angleDiff < -M_PI) {
+    angleDiff += M_PI * 2.0f;
+  }
 
-    const DataPointType &getVecEntry(int index) const
-    {
-        return dataPoints[index];
-    }
+  if (abs(angleDiff) > angleDiffThresh){
+    return true;
+  }
+  return false;
+}
 
-    DataPointType getOrigo() const
-    {
-        return origo;
-    }
-
-    void setOrigo(const DataPointType &origoIn)
-    {
-        origo = origoIn;
-    }
-
-protected:
-    std::vector<DataPointType> dataPoints;
-    DataPointType origo;
-};
-
-typedef DataPointContainer<Eigen::Vector2f> DataContainer;
-
-} // namespace hectorslam
+}
 
 #endif
