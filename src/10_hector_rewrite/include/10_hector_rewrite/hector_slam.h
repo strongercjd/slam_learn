@@ -42,7 +42,7 @@ class MapPublisherContainer
 public:
     ros::Publisher mapPublisher_;
     ros::Publisher mapMetadataPublisher_;
-    nav_msgs::GetMap::Response map_;
+    nav_msgs::GetMap::Response map_;//nav_msgs::GetMap::Response 是ROS中 一种消息类型,用来代表一张二维地图
     ros::ServiceServer dynamicMapServiceServer_;
 };
 
@@ -69,9 +69,13 @@ protected:
     std::vector<MapPublisherContainer> mapPubContainer;
 
     tf::TransformListener tf_;
-    tf::TransformBroadcaster *tfB_;
+    tf::TransformBroadcaster *tfB_; // TransformBroadcaster就是一个在 ROS tf 中负责广播变换信息的对象
     tf::Transform map_to_odom_;
     tf::StampedTransform laserTransform_;
+    /*  
+    - laser_geometry是ROS中的一个laser处理相关的库
+    - LaserProjection是该库中的一个类,用于处理激光雷达的数据
+    */
     laser_geometry::LaserProjection projector_;
     sensor_msgs::PointCloud laser_point_cloud_; // 点云格式的雷达数据
 

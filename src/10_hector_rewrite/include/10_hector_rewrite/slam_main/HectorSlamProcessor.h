@@ -76,7 +76,7 @@ public:
     * 对每一帧的激光数据进行处理
     * @param dataContainer  激光数据存储容器，坐标已转换成地图尺度，为地图中激光系的坐标
     * @param poseHintWorld  激光系在地图中的初始pose
-    * @param map_without_matching 是否进行匹配
+    * @param map_without_matching 是否进行位姿匹配
     */
     void update(const DataContainer &dataContainer, const Eigen::Vector3f &poseHintWorld, bool map_without_matching = false)
     {
@@ -110,7 +110,7 @@ public:
     /** slam系统重置 **/
     void reset()
     {
-        lastMapUpdatePose = Eigen::Vector3f(FLT_MAX, FLT_MAX, FLT_MAX);
+        lastMapUpdatePose = Eigen::Vector3f(FLT_MAX, FLT_MAX, FLT_MAX); // FLT_MAX是一个预定义的C/C++数学常量,表示float类型的最大值。
         lastScanMatchPose = Eigen::Vector3f::Zero();
         //重置地图
         mapRep->reset();
@@ -118,7 +118,7 @@ public:
 
     // 上一次匹配到的位姿
     const Eigen::Vector3f &getLastScanMatchPose() const { return lastScanMatchPose; };
-    // 上一次匹配的协方差
+    // 上一次匹配的协方差  Covariance：协方差
     const Eigen::Matrix3f &getLastScanMatchCovariance() const { return lastScanMatchCov; };
     float getScaleToMap() const { return mapRep->getScaleToMap(); };
 
@@ -141,8 +141,8 @@ protected:
     MapRepresentationInterface *mapRep; // 地图接口对象--纯虚类
 
     Eigen::Vector3f lastMapUpdatePose;
-    Eigen::Vector3f lastScanMatchPose;
-    Eigen::Matrix3f lastScanMatchCov;
+    Eigen::Vector3f lastScanMatchPose;//上一帧匹配的位姿
+    Eigen::Matrix3f lastScanMatchCov; // 上一次匹配的协方差  Covariance：协方差
 
     float paramMinDistanceDiffForMapUpdate;
     float paramMinAngleDiffForMapUpdate;

@@ -46,17 +46,27 @@ class GridMapBase
 {
 
 public:
+    /*
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW 是一个Eigen宏,用来给类添加新的操作符overload。
+    该宏的作用是:
+    - 为类添加新的操作符 operator new() 和 operator new[]() 。
+    - 这两个新的操作符会强制分配具有特定 alignment 的内存。
+    使用该宏可以保证Eigen向量和矩阵在内存中具有良好的对齐,有助于提高计算性能
+    */
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     /**
-   * Constructor, creates grid representation and transformations.
-   */
+     * @brief 创建网格表示和转换。
+     * 
+     * @param mapResolution 地图分辨率
+     * @param size 地图大小
+     * @param offset 起始坐标
+     */
     GridMapBase(float mapResolution, const Eigen::Vector2i &size,
                 const Eigen::Vector2f &offset)
         : mapArray(0), lastUpdateIndex(-1)
     {
-        Eigen::Vector2i newMapDimensions(size);
-
+        Eigen::Vector2i newMapDimensions(size);//新地图的尺寸 Dimensions:尺寸
         this->setMapGridSize(newMapDimensions);
         sizeX = size[0];
 
@@ -135,7 +145,7 @@ public:
             delete[] mapArray;
 
             mapArray = 0;
-            mapDimensionProperties.setMapCellDims(Eigen::Vector2i(-1, -1));
+            mapDimensionProperties.setMapCellDims(Eigen::Vector2i(-1, -1));//设置默认地图大小为-1
         }
     }
 
@@ -158,9 +168,15 @@ public:
     {
         return mapArray[index];
     }
-
+    /**
+     * @brief 设置地图大小
+     * 
+     * @param newMapDims 地图大小
+     */
     void setMapGridSize(const Eigen::Vector2i &newMapDims)
     {
+        // std::cout<<"X:"<<mapDimensionProperties.getMapDimensions().x()<<std::endl;
+        // std::cout<<"Y:"<<mapDimensionProperties.getMapDimensions().y()<<std::endl;
         if (newMapDims != mapDimensionProperties.getMapDimensions())
         {
             deleteArray();
@@ -262,25 +278,39 @@ public:
     }
 
     /**
-   * Set the map transformations
-   * @param xWorld The origin of the map coordinate system on the x axis in world coordinates
-   * @param yWorld The origin of the map coordinate system on the y axis in world coordinates
-   * @param The cell length of the grid map
-   */
+     * @brief 设置地图变换
+     * 
+     * @param topLeftOffset 起始坐标
+     * @param cellLength 地图分辨率
+     */
     void setMapTransformation(const Eigen::Vector2f &topLeftOffset,
                               float cellLength)
     {
-        mapDimensionProperties.setCellLength(cellLength);
-        mapDimensionProperties.setTopLeftOffset(topLeftOffset);
+        mapDimensionProperties.setCellLength(cellLength);//设置分辨率
+        mapDimensionProperties.setTopLeftOffset(topLeftOffset);//设置起始坐标，就是地图左上角的偏移
 
-        scaleToMap = 1.0f / cellLength;
+        scaleToMap = 1.0f / cellLength;//地图分辨率的倒数，也就是地图的缩放比例
+        /*
+        假设单元长度为0.5米,地图左上角在世界坐标系为 (2,3) 。
+        则:
+        - scaleToMap 为 1/0.5 = 2
+        - topLeftOffset 为 (2,3)
+        则变换矩阵为:
+        mapTworld = Eigen::AlignedScaling2f(2, 2) * Eigen::Translation2f(2,3);
+        Eigen::AlignedScaling2f(2, 2)将地图放大2倍
+        Eigen::Translation2f(2,3) 平移到(2,3),也就是平移到世界坐标系下
+
+        则地图坐标 (1,1) 在世界坐标中的位置为:(4,5)
+
+        即地图坐标(1,1) 在世界坐标系下对应的位置为(4,5)。
+        */
 
         mapTworld = Eigen::AlignedScaling2f(scaleToMap, scaleToMap) * Eigen::Translation2f(topLeftOffset[0], topLeftOffset[1]);
 
         worldTmap3D = Eigen::AlignedScaling3f(scaleToMap, scaleToMap, 1.0f) * Eigen::Translation3f(topLeftOffset[0], topLeftOffset[1], 0);
 
         //std::cout << worldTmap3D.matrix() << std::endl;
-        worldTmap3D = worldTmap3D.inverse();
+        worldTmap3D = worldTmap3D.inverse();//求逆矩阵
 
         worldTmap = mapTworld.inverse();
     }
@@ -399,8 +429,9 @@ public:
 
 protected:
     ConcreteCellType *mapArray; ///< Map representation used with plain pointer array.
-
-    float scaleToMap; ///< Scaling factor from world to map.
+    // 世界坐标系(world frame)是一个固定的参考坐标系,通常与机器人固定相对。这里指的是地图左上角位置作为世界坐标系的原点
+    // 地图坐标系(map frame)则是用于构建和表示地图的数据坐标系。这里指的是地图左下角位置作为地图坐标系的原点
+    float scaleToMap; ///< 世界坐标系到地图坐标系的比例因子，也就是地图分辨率的倒数
 
     Eigen::Affine2f worldTmap;   ///< Homogenous 2D transform from map to world coordinates.
     Eigen::Affine3f worldTmap3D; ///< Homogenous 3D transform from map to world coordinates.

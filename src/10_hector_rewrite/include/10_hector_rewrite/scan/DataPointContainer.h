@@ -33,7 +33,11 @@
 
 namespace hectorslam
 {
-
+/**
+ * @brief 数据点的容器 Container：容器
+ * 
+ * @tparam DataPointType 数据点的类型
+ */
 template <typename DataPointType>
 class DataPointContainer
 {
@@ -56,7 +60,11 @@ public:
             dataPoints[i] *= factor;
         }
     }
-
+    /**
+     * @brief 添加一个点的数据到容器中
+     * 
+     * @param dataPoint 坐标，是真实坐标，乘了地图缩放比例。并且是在base_link下的坐标
+     */
     void add(const DataPointType &dataPoint)
     {
         dataPoints.push_back(dataPoint);
@@ -89,6 +97,18 @@ public:
 
 protected:
     std::vector<DataPointType> dataPoints;
+
+    /*    
+    假设有两个坐标系:
+    - base_link 坐标系
+    - laser 坐标系
+    laser坐标系相对于base_link发生了一个 x=1.0, y=2.0 的位移。
+    那么可以创建一个 stamped transform 来表示这个关系:
+    tf::StampedTransform laserTransform;
+    laserTransform.setOrigin(tf::Vector3(1.0, 2.0, 0.0)); 
+    这里设置的原点(1.0, 2.0, 0.0)就是 laser 相对于 base_link 的位移量。
+    所以通过 getOrigin() 获得的是 laser 在 base_link 中的坐标位置。
+    */
     DataPointType origo;
 };
 

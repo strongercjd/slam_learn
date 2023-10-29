@@ -4,7 +4,10 @@
 #include "MapLockerInterface.h"
 
 #include <boost/thread/mutex.hpp>
-
+/**
+ * @brief 互斥锁
+ * 
+ */
 class HectorMapMutex : public MapLockerInterface
 {
 public:

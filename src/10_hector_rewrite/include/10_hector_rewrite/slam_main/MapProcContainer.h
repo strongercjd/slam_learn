@@ -81,7 +81,7 @@ public:
         gridMapUtil->resetCachedData();
     }
 
-    //// 获取本图层的尺度 scale = 1.0 / map_resolution.
+    // 获取本图层的尺度 scale = 1.0 / map_resolution.
     float getScaleToMap() const { return gridMap->getScaleToMap(); };
 
     const GridMap &getGridMap() const { return *gridMap; };

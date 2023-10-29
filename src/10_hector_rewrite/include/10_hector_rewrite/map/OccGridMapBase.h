@@ -45,7 +45,13 @@ class OccGridMapBase : public GridMapBase<ConcreteCellType>
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
+    /**
+     * @brief Construct a new Occ Grid Map Base object  OccGridMap是occupancy grid map的简称，occupancy:占用/占用率
+     * 
+     * @param mapResolution 地图分辨率
+     * @param size  地图大小
+     * @param offset 起始坐标
+     */
     OccGridMapBase(float mapResolution, const Eigen::Vector2i &size, const Eigen::Vector2f &offset)
         : GridMapBase<ConcreteCellType>(mapResolution, size, offset), currUpdateIndex(0), currMarkOccIndex(-1), currMarkFreeIndex(-1)
     {

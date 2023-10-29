@@ -32,7 +32,10 @@
 #include <cmath>
 
 /**
- * Provides a log odds of occupancy probability representation for cells in a occupancy grid map.
+ * @brief 提供占用网格地图中单元的占用概率表示的对数赔率。
+ * Log Odds (对数几率)是一种表示概率的有效方法。概率本身用0~1之间的小数表示,但是Log Odds用对数比(log ratio)表示概率,计算时更简单高效。
+ * Log Odds = log(P/(1-P))
+ * P = 1/(1+ e^(-Log Odds)) 
  */
 class LogOddsCell
 {
@@ -87,7 +90,11 @@ public:
 };
 
 /**
- * Provides functions related to a log odds of occupancy probability respresentation for cells in a occupancy grid map.
+ * @brief 提供与占用网格地图中单元的占用概率重新呈现的对数赔率相关的函数。
+ * Log Odds (对数几率)是一种表示概率的有效方法。概率本身用0~1之间的小数表示,但是Log Odds用对数比(log ratio)表示概率,计算时更简单高效。
+ * Log Odds = log(P/(1-P))
+ * P = 1/(1+ e^(-Log Odds)) 
+ * 
  */
 class GridMapLogOddsFunctions
 {

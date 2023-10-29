@@ -71,6 +71,7 @@ public:
             std::cout << "HectorSM map lvl " << i << ": cellLength: " << mapResolution << " res x:" << resolution.x() << " res y: " << resolution.y() << "\n";
 
             /** 创建网格地图 **/
+            /* typedef OccGridMapBase<LogOddsCell, GridMapLogOddsFunctions> GridMap; */
             GridMap *gridMap = new hectorslam::GridMap(mapResolution, resolution, Eigen::Vector2f(mid_offset_x, mid_offset_y));
             /** 处理上面网格地图的一些工具 **/
             OccGridMapUtilConfig<GridMap> *gridMapUtil = new OccGridMapUtilConfig<GridMap>(gridMap);
@@ -83,7 +84,7 @@ public:
             resolution /= 2;       // 地图格子行、列格子数减半
             mapResolution *= 2.0f; // 地图精度减半
         }
-
+        std::cout<<"end deal numDepth"<<std::endl;
         // 输入的激光数据即对应首层地图,第一层的激光数据无需记录到dataContainers中，因此数据容器大小 = 金字塔层数 - 1 = 地图容器大小 - 1 。
         // dataContainers[i]对应mapContainer[i+1], 输入的数据dataContainer 对应 mapContainer[0]
         dataContainers.resize(numDepth - 1);
@@ -136,9 +137,9 @@ public:
 
     /**
      * 地图匹配，通过多分辨率地图求解当前激光帧的pose。
-     * @param beginEstimateWorld
-     * @param dataContainer
-     * @param covMatrix
+     * @param beginEstimateWorld 初始位姿
+     * @param dataContainer 雷达数据
+     * @param covMatrix  上一次匹配的协方差  Covariance：协方差
      * @return
      */
     virtual Eigen::Vector3f matchData(const Eigen::Vector3f &beginEstimateWorld, const DataContainer &dataContainer, Eigen::Matrix3f &covMatrix)
@@ -153,11 +154,12 @@ public:
             //std::cout << " m " << i;
             if (index == 0)
             {
-                tmp = (mapContainer[index].matchData(tmp, dataContainer, covMatrix, 5)); /// 输入数据dataContainer 对应 mapContainer[0]
+                tmp = (mapContainer[index].matchData(tmp, dataContainer, covMatrix, 5)); // 输入数据dataContainer 对应 mapContainer[0]
             }
             else
             {
                 // 根据地图层数对原始激光数据坐标进行缩小，得到对应图层尺寸的激光数据
+                // pow(2.0, static_cast<double>(1)) 计算2的1次方,结果为2.0
                 dataContainers[index - 1].setFrom(dataContainer, static_cast<float>(1.0 / pow(2.0, static_cast<double>(index))));
                 tmp = (mapContainer[index].matchData(tmp, dataContainers[index - 1], covMatrix, 3));
                 /// dataContainers[i]对应mapContainer[i+1]
