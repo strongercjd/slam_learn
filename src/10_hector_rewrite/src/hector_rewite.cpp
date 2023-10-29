@@ -387,8 +387,8 @@ void HectorMappingRos::publishMap(MapPublisherContainer &mapPublisher,
 bool HectorMappingRos::rosPointCloudToDataContainer(const sensor_msgs::PointCloud &pointCloud, const tf::StampedTransform &laserTransform, hectorslam::DataContainer &dataContainer, float scaleToMap)
 {
     size_t size = pointCloud.points.size();
-    /*  
     dataContainer.clear();
+    /*
     getOrigin() 方法可以返回当前坐标变换的原点坐标值
     从 laserTransform 对象中获取原点坐标(x,y,z),并存储到 tf::Vector3 类型的 laserPos 变量中。
     对于一个坐标变换对象来说,其原点坐标表示的是该坐标变换在父坐标系下的位移值
